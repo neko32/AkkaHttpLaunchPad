@@ -3,16 +3,18 @@ package org.tanuneko.akka
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
-import org.tanuneko.akka.model.{AddCreditCardReq}
+import org.tanuneko.akka.model.AddCreditCardReq
 import org.tanuneko.akka.persistence.Persistence
+import org.tanuneko.akka.service.CreditCardStore
 import spray.json._
 
 trait RestRouter extends EventMarshalling {
 
-  def persistence: Persistence
+  implicit def persistence: Persistence
   import akka.http.scaladsl.model.StatusCodes._
 
   def routes: Route = healthCheckHandler ~ creditHandler
+  def creditCardStoreService = new CreditCardStore()
 
 
   def creditHandler =
@@ -20,7 +22,7 @@ trait RestRouter extends EventMarshalling {
       // add credit card to the user
       post {
         entity(as[AddCreditCardReq]) { req =>
-          persistence.add(s"${persistence.creditCardKey}:${req.userId}", persistence.creditCardFieldName, req.creditCard.toJson) match {
+          creditCardStoreService.store(req.userId, req.creditCard) match {
             case Right(_) => complete(
               HttpResponse(
                 OK,
@@ -29,7 +31,14 @@ trait RestRouter extends EventMarshalling {
                 )
               )
             )
-            case _ => complete(BadRequest, s"Failed to add ${req.userId}, cc[${req.creditCard.last4Digit}]")
+            case _ => complete(
+              HttpResponse(
+              OK,
+              entity = HttpEntity(ContentTypes.`application/json`,
+                s"${req.userId} has already registered cc[${req.creditCard.last4Digit}]"
+                )
+              )
+            )
           }
         }
       } ~

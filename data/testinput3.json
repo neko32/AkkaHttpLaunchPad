@@ -1,0 +1,9 @@
+{
+  "userId": 1,
+  "creditCard": {
+    "name": "Mantaro Kinniku",
+    "expiryMonth": 9,
+    "expiryYear": 2021,
+    "last4Digit": 4285
+  }
+}

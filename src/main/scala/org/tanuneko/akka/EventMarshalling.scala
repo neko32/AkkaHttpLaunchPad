@@ -17,3 +17,5 @@ class EventMarshalling extends SprayJsonSupport with DefaultJsonProtocol {
 
 }
 
+object EventMarshalling extends EventMarshalling
+
