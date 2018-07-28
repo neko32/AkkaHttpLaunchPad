@@ -27,6 +27,7 @@ libraryDependencies ++= {
     "net.debasishg" %% "redisclient" % "3.4",
     "com.typesafe.play" %% "play-ws" % "2.6.17",
     "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-    "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.1.9"
+    "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.1.9",
+    "net.debasishg" %% "redisclient" % "3.4"
   )
 }

@@ -1,0 +1,9 @@
+{
+  "userId": 2,
+  "creditCard": {
+    "name": "Don Arakawa",
+    "expiryMonth": 9,
+    "expiryYear": 2020,
+    "last4Digit": 5228
+  }
+}
