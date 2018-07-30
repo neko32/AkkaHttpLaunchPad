@@ -18,6 +18,8 @@ import scala.util.{Failure, Success, Try}
 
 class RestApiSpec extends WordSpec with BeforeAndAfterAll {
 
+  val log = Logging(sys.eventStream, getClass.getName)
+
   class InMemPersistence extends Persistence {
 
     private var db = scala.collection.mutable.Map.empty[String, String]
@@ -58,7 +60,6 @@ class RestApiSpec extends WordSpec with BeforeAndAfterAll {
     val api = new MockRestAPI()
     val bindingFuture: Future[ServerBinding] =
       Http().bindAndHandle(api.routes, "localhost", 19500)
-    val log = Logging(sys.eventStream, "my")
     bindingFuture.map { serverBinding =>
       log.info(s"REST API is bound to ${serverBinding.localAddress}")
     }.onComplete {
@@ -70,7 +71,7 @@ class RestApiSpec extends WordSpec with BeforeAndAfterAll {
   }
 
   override def afterAll = {
-    println("#### SHUTTING DOWN ALL!!! ####")
+    log.info("#### SHUTTING DOWN ALL!!! ####")
     mat.shutdown()
     sys.terminate.onComplete { _ => println("Actor System shutted down.")}
   }
@@ -87,13 +88,10 @@ class RestApiSpec extends WordSpec with BeforeAndAfterAll {
           }
         }
       val r = Await.result(rez, Duration("10s"))
-      println(r)
+      log.debug(r.toString)
       assert(r.status.intValue == 404)
     }
 
-    "Register card and get it" in {
-
-    }
   }
 
 }
