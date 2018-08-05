@@ -45,14 +45,8 @@ trait RestRouter extends EventMarshalling {
       // get credit card info for the specified user
       get {
         parameters('userId.as[Int]) { userId =>
-          persistence.get(s"${persistence.creditCardKey}:${userId}", persistence.creditCardFieldName) match {
-            case Some(cc) => complete(
-              HttpResponse(
-                OK,
-                entity = HttpEntity(ContentTypes.`application/json`,
-                  cc.toJson.prettyPrint)
-              )
-            )
+          onSuccess(persistence.get(s"${persistence.creditCardKey}:${userId}", persistence.creditCardFieldName)) {
+            case Some(v) => complete(HttpResponse(OK, entity = HttpEntity(ContentTypes.`application/json`, v.toJson.prettyPrint)))
             case _ => complete(NotFound)
           }
         }

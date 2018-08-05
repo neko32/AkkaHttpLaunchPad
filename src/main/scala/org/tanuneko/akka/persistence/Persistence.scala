@@ -2,6 +2,8 @@ package org.tanuneko.akka.persistence
 
 import com.redis.RedisClientPool
 
+import scala.concurrent.{ExecutionContext, Future}
+
 trait Persistence {
 
   def creditCardFieldName = "CreditCard"
@@ -9,12 +11,12 @@ trait Persistence {
   def creditCardKey = "app:cc"
 
   def add[A](key: String, field: String, elem: A): Either[Exception, Boolean]
-  def get(key: String, field: String): Option[String]
+  def get(key: String, field: String): Future[Option[String]]
   def del(key: String): Long
 
 }
 
-class RedisPersistence(host: String, port: Int) extends Persistence {
+class RedisPersistence(host: String, port: Int)(implicit ec: ExecutionContext) extends Persistence {
 
   lazy val redisPool = new RedisClientPool(host, port)
 
@@ -27,9 +29,11 @@ class RedisPersistence(host: String, port: Int) extends Persistence {
     }
   }
 
-  override def get(key: String, field: String): Option[String] = {
-    redisPool.withClient { cl =>
-      cl.hget(key, field)
+  override def get(key: String, field: String): Future[Option[String]] = {
+    Future {
+      redisPool.withClient { cl =>
+        cl.hget(key, field)
+      }
     }
   }
 

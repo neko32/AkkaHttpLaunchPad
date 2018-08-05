@@ -16,11 +16,16 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.util.{Failure, Success, Try}
 
+
 class RestApiSpec extends WordSpec with BeforeAndAfterAll {
+
+  implicit val sys = ActorSystem("unittest")
+  implicit val mat = ActorMaterializer()
+  implicit val ec: ExecutionContext = sys.dispatcher
 
   val log = Logging(sys.eventStream, getClass.getName)
 
-  class InMemPersistence extends Persistence {
+  class InMemPersistence(implicit ec: ExecutionContext) extends Persistence {
 
     private var db = scala.collection.mutable.Map.empty[String, String]
 
@@ -33,9 +38,9 @@ class RestApiSpec extends WordSpec with BeforeAndAfterAll {
       }
     }
 
-    override def get(key: String, field: String): Option[String] = {
+    override def get(key: String, field: String): Future[Option[String]] = {
       println(s"@InMemPersistence::get(${key},${field})")
-      db.get(key + field)
+      Future.successful(db.get(key + field))
     }
 
     override def del(key: String): Long = {
@@ -47,13 +52,9 @@ class RestApiSpec extends WordSpec with BeforeAndAfterAll {
     def reset = db.clear()
   }
 
-  class MockRestAPI extends RestRouter {
+  class MockRestAPI(implicit ec: ExecutionContext) extends RestRouter {
     override def persistence: Persistence = new InMemPersistence
   }
-
-  implicit val sys = ActorSystem("unittest")
-  implicit val mat = ActorMaterializer()
-  implicit val ec: ExecutionContext = sys.dispatcher
 
   override def beforeAll = {
 
